@@ -32,6 +32,9 @@ var tableEmoji = map[int]string{
 	4: "🏫",
 }
 
+// ASCIIEmoji used instead of empty substitutions
+const ASCIIEmoji = "(•ω•)⊃──☆ﾟ.･❁｡ﾟ✧"
+
 func main() {
 	go startBot()
 	go herokuNoSleep()
@@ -47,6 +50,9 @@ func main() {
 }
 
 func startBot() {
+	if len(token) == 0 {
+		log.Fatal("BOTAPI_TOKEN must be defined")
+	}
 	updates := make(chan Update)
 	go startPolling(updates)
 	for {
@@ -171,16 +177,16 @@ func parseDocument(doc *goquery.Document) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	bodyText, err = parseDocumentSubstitutions(doc)
+	bodyText, err = parseLessonSubstitutions(doc)
 	if err != nil {
 		return "", err
 	}
-	classroomSubstitutions, err = parseDocumentClassroomSubstitutions(doc)
+	classroomSubstitutions, err = parseClassroomSubstitutions(doc)
 	if err != nil {
 		return "", err
 	}
 	link := "[Переглянути на сайті 🦄](http://ki.sumdu.edu.ua/zamen/mes_inst.html)"
-	message := fmt.Sprintf("%v\n\n%v\n\n%v\n\n%v", headerText, bodyText, classroomSubstitutions, link)
+	message := fmt.Sprintf("%v\n\n%v\n\n%v%v", headerText, bodyText, classroomSubstitutions, link)
 	return message, nil
 }
 
@@ -198,8 +204,8 @@ func parseDocumentHeader(doc *goquery.Document) (string, error) {
 	return headerText, nil
 }
 
-func parseDocumentSubstitutions(doc *goquery.Document) (string, error) {
-	var bodyText string
+func parseLessonSubstitutions(doc *goquery.Document) (string, error) {
+	var header, substitutions string
 	table := doc.Find("table").First()
 	table.Find("tr").Each(func(idx int, sel *goquery.Selection) {
 		if idx == 0 {
@@ -208,7 +214,7 @@ func parseDocumentSubstitutions(doc *goquery.Document) (string, error) {
 				if t == "-" {
 					t = "предмет"
 				}
-				bodyText += fmt.Sprintf("%v %v \n", tableEmoji[i], t)
+				header += fmt.Sprintf("%v %v \n", tableEmoji[i], t)
 			})
 		} else {
 			matched := isMatchedGroupNumberForTableRow(sel)
@@ -220,17 +226,21 @@ func parseDocumentSubstitutions(doc *goquery.Document) (string, error) {
 				if len(t) < 1 {
 					return
 				}
-				bodyText += fmt.Sprintf("%v %v \n", tableEmoji[i], t)
+				substitutions += fmt.Sprintf("%v %v \n", tableEmoji[i], t)
 			})
 		}
-		bodyText += "\n"
+		substitutions += "\n"
 	})
-	bodyText = regexp.MustCompile(`\n{2,}$`).ReplaceAllString(bodyText, "\n")
-	bodyText = strings.TrimSpace(bodyText)
-	return bodyText, nil
+	if s := strings.TrimSpace(substitutions); len(s) == 0 {
+		substitutions = fmt.Sprintf("%v\nНемає замін 🙂", ASCIIEmoji)
+		return substitutions, nil
+	}
+	substitutions = regexp.MustCompile(`\n{2,}$`).ReplaceAllString(substitutions, "\n")
+	substitutions = strings.TrimSpace(substitutions)
+	return substitutions, nil
 }
 
-func parseDocumentClassroomSubstitutions(doc *goquery.Document) (string, error) {
+func parseClassroomSubstitutions(doc *goquery.Document) (string, error) {
 	var classroomSubstitutions string
 	emojis := map[int]string{
 		0: tableEmoji[0],
@@ -250,8 +260,12 @@ func parseDocumentClassroomSubstitutions(doc *goquery.Document) (string, error) 
 		})
 		classroomSubstitutions += "\n"
 	})
+	if len(classroomSubstitutions) == 0 {
+		return "", nil
+	}
 	classroomSubstitutions = "Заміна аудиторій 🎈\n\n" + classroomSubstitutions
 	classroomSubstitutions = strings.TrimSpace(classroomSubstitutions)
+	classroomSubstitutions += "\n\n"
 	return classroomSubstitutions, nil
 }
 
