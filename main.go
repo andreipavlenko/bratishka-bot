@@ -260,7 +260,7 @@ func parseClassroomSubstitutions(doc *goquery.Document) (string, error) {
 		})
 		classroomSubstitutions += "\n"
 	})
-	if len(classroomSubstitutions) == 0 {
+	if s := strings.TrimSpace(classroomSubstitutions); len(s) == 0 {
 		return "", nil
 	}
 	classroomSubstitutions = "Заміна аудиторій 🎈\n\n" + classroomSubstitutions
