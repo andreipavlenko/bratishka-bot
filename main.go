@@ -206,15 +206,18 @@ func parseDocumentHeader(doc *goquery.Document) (string, error) {
 
 func parseLessonSubstitutions(doc *goquery.Document) (string, error) {
 	var header, substitutions string
+	headerTitles := map[int]string{
+		0: "Група",
+		1: "Пара",
+		2: "Предмет",
+		3: "Заміна",
+		4: "Аудиторія",
+	}
 	table := doc.Find("table").First()
 	table.Find("tr").Each(func(idx int, sel *goquery.Selection) {
 		if idx == 0 {
 			sel.Children().Each(func(i int, s *goquery.Selection) {
-				t := s.Text()
-				if t == "-" {
-					t = "предмет"
-				}
-				header += fmt.Sprintf("%v %v \n", tableEmoji[i], t)
+				header += fmt.Sprintf("%v %v \n", tableEmoji[i], headerTitles[i])
 			})
 		} else {
 			matched := isMatchedGroupNumberForTableRow(sel)
@@ -235,6 +238,7 @@ func parseLessonSubstitutions(doc *goquery.Document) (string, error) {
 		substitutions = fmt.Sprintf("%v\nНемає замін 🙂", ASCIIEmoji)
 		return substitutions, nil
 	}
+	substitutions = header + substitutions
 	substitutions = regexp.MustCompile(`\n{2,}$`).ReplaceAllString(substitutions, "\n")
 	substitutions = strings.TrimSpace(substitutions)
 	return substitutions, nil
