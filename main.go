@@ -21,7 +21,7 @@ var (
 	token       = os.Getenv("BOTAPI_TOKEN")
 	apiEndpoint = "https://api.telegram.org/bot"
 	requestURL  = apiEndpoint + token
-	groupNumber = "81"
+	groupNumberPattern = "(ЕІ-81)|(П-81)"
 )
 
 var tableEmoji = map[int]string{
@@ -275,7 +275,7 @@ func parseClassroomSubstitutions(doc *goquery.Document) (string, error) {
 
 func isMatchedGroupNumberForTableRow(row *goquery.Selection) bool {
 	group := row.Children().First().Text()
-	matched, err := regexp.MatchString(groupNumber, group)
+	matched, err := regexp.Match(groupNumberPattern, group)
 	if err != nil {
 		return false
 	}
