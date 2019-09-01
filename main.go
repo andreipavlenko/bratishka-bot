@@ -275,7 +275,7 @@ func parseClassroomSubstitutions(doc *goquery.Document) (string, error) {
 
 func isMatchedGroupNumberForTableRow(row *goquery.Selection) bool {
 	group := row.Children().First().Text()
-	matched, err := regexp.Match(groupNumberPattern, group)
+	matched, err := regexp.Match(groupNumberPattern, []byte(group))
 	if err != nil {
 		return false
 	}
