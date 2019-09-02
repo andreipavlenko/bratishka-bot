@@ -8,6 +8,7 @@ type Updates struct {
 type Update struct {
 	UpdateID int `json:"update_id"`
 	Message  Message
+	CallbackQuery CallbackQuery `json:"callback_query"`
 }
 
 type Message struct {
@@ -27,4 +28,11 @@ type User struct {
 
 type Chat struct {
 	ID int
+}
+
+type CallbackQuery struct {
+	ID string
+	Data string
+	Message Message
+	From User
 }

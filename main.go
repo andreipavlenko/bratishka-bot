@@ -107,6 +107,11 @@ func startPolling(c chan Update) {
 }
 
 func processUpdate(u Update) {
+	log.Println("Processing update..")
+	_, err := strconv.Atoi(u.CallbackQuery.ID)
+	if err == nil {
+		HandleCallbackQuery(u.CallbackQuery)
+	}
 	msgText := u.Message.Text
 	for pattern, handler := range MessageHandlers {
 		matched, err := regexp.MatchString(pattern, msgText)
