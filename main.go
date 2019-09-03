@@ -38,6 +38,7 @@ const ASCIIEmoji = "(•ω•)⊃──☆ﾟ.･❁｡ﾟ✧"
 func main() {
 	go herokuNoSleep()
 	go watchForSubstitutionsUpdate()
+	go createServer()
 	if len(token) == 0 {
 		log.Fatal("BOTAPI_TOKEN must be defined")
 	}
@@ -48,6 +49,17 @@ func main() {
 		case upd := <-updates:
 			processUpdate(upd)
 		}
+	}
+}
+
+func createServer() {
+	port := os.Getenv("PORT")
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Hello")
+	})
+	err := http.ListenAndServe(":"+port, nil)
+	if err != nil {
+		log.Println(err)
 	}
 }
 
