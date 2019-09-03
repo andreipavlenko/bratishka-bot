@@ -36,20 +36,8 @@ var tableEmoji = map[int]string{
 const ASCIIEmoji = "(•ω•)⊃──☆ﾟ.･❁｡ﾟ✧"
 
 func main() {
-	go startBot()
 	go herokuNoSleep()
 	go watchForSubstitutionsUpdate()
-	port := os.Getenv("PORT")
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello")
-	})
-	err := http.ListenAndServe(":"+port, nil)
-	if err != nil {
-		log.Println(err)
-	}
-}
-
-func startBot() {
 	if len(token) == 0 {
 		log.Fatal("BOTAPI_TOKEN must be defined")
 	}
@@ -58,19 +46,19 @@ func startBot() {
 	for {
 		select {
 		case upd := <-updates:
-			go processUpdate(upd)
+			processUpdate(upd)
 		}
 	}
 }
 
 func herokuNoSleep() {
-	for {
+	c := time.Tick(20 * time.Minute)
+	for _ = range c {
 		appURL := os.Getenv("APP_URL")
 		if len(appURL) == 0 {
 			continue
 		}
 		http.Get(appURL)
-		time.Sleep(time.Minute * 20)
 	}
 }
 
@@ -80,6 +68,7 @@ func startPolling(c chan Update) {
 		log.Println("Getting updates..")
 		requestParameters := url.Values{
 			"offset": {fmt.Sprintf("%v", offset)},
+			"timeout": {"1"},
 		}
 		data, err := MakeTgapiRequest("getUpdates", requestParameters)
 		if err != nil {
@@ -102,7 +91,6 @@ func startPolling(c chan Update) {
 				}
 			}
 		}
-		time.Sleep(time.Millisecond * 1000)
 	}
 }
 
@@ -289,8 +277,8 @@ func isMatchedGroupNumberForTableRow(row *goquery.Selection) bool {
 
 func watchForSubstitutionsUpdate() {
 	var data []byte
-	for {
-		time.Sleep(time.Minute * 3)
+	c := time.Tick(5 * time.Minute)
+	for _ = range c {
 		targetChatID := os.Getenv("CHAT_ID")
 		if len(targetChatID) == 0 {
 			continue

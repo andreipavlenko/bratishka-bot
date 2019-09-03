@@ -12,6 +12,7 @@ type Reactions map[int]string
 var MessageHandlers = map[string]func(msg Message){
 	`^/start$`: sayHello,
 	`(?i)Братишка.*подскажи замены`:              handleSubstitutionsRequest,
+	`(?i)!замены`:                                handleSubstitutionsRequest,
 	`(?i)Молодец.*братишка`:                      sayThankYou,
 	`(?i)Спасибо.*братишка`:                      sayPlease,
 	`(?i)Привет.*братишка`:                       sayHello,
@@ -42,6 +43,23 @@ func handleSubstitutionsRequest(msg Message) {
 	SendSubstitutions(msg.Chat.ID)
 }
 
+func makeReactionsKeyboard(reactionsCounter map[string]int) string {
+	buttons := map[string]string{}
+	for r, c := range reactionsCounter {
+		if c > 0 {
+			buttons[r] = fmt.Sprintf(`{"text": "%v %v", "callback_data": "%v"}`, reactionEmoji[r], c, r)
+		} else {
+			buttons[r] = fmt.Sprintf(`{"text": "%v", "callback_data": "%v"}`, reactionEmoji[r], r)
+		}
+	}
+	reply_markup := fmt.Sprintf(`{"inline_keyboard": [[
+		%v,
+		%v,
+		%v
+	]]}`, buttons["reaction1"], buttons["reaction2"], buttons["reaction3"])
+	return reply_markup
+}
+
 func SendSubstitutions(chatID int) {
 	message, err := GetSubstitutions()
 	if err != nil {
@@ -49,11 +67,11 @@ func SendSubstitutions(chatID int) {
 		return
 	}
 
-	reply_markup := `{"inline_keyboard": [[
-		{"text": "😍", "callback_data": "reaction1"},
-		{"text": "🤔", "callback_data": "reaction2"},
-		{"text": "💩", "callback_data": "reaction3"}
-	]]}`
+	reply_markup := makeReactionsKeyboard(map[string]int{
+		"reaction1": 0,
+		"reaction2": 0,
+		"reaction3": 0,
+	})
 
 	p := url.Values{
 		"chat_id":    {fmt.Sprintf("%v", chatID)},
@@ -65,7 +83,6 @@ func SendSubstitutions(chatID int) {
 }
 
 func HandleCallbackQuery(cq CallbackQuery) {
-	// log.Printf("Handling query %v", cq.Data)
 	matched, err := regexp.Match("reaction", []byte(cq.Data))
 	if err != nil {
 		return
@@ -94,19 +111,7 @@ func updateMessageReaction(from User, msg Message, reaction string) {
 		counter[reaction] = counter[reaction] + 1
 	}
 	log.Println("Updating reaction")
-	buttons := map[string]string{}
-	for r, c := range counter {
-		if c > 0 {
-			buttons[r] = fmt.Sprintf(`{"text": "%v %v", "callback_data": "%v"}`, reactionEmoji[r], c, r)
-		} else {
-			buttons[r] = fmt.Sprintf(`{"text": "%v", "callback_data": "%v"}`, reactionEmoji[r], r)
-		}
-	}
-	reply_markup := fmt.Sprintf(`{"inline_keyboard": [[
-		%v,
-		%v,
-		%v
-	]]}`, buttons["reaction1"], buttons["reaction2"], buttons["reaction3"])
+	reply_markup := makeReactionsKeyboard(counter)
 	p := url.Values{
 		"chat_id":    {fmt.Sprintf("%v", chatID)},
 		"message_id":    {fmt.Sprintf("%v", msgID)},
