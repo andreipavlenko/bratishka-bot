@@ -89,6 +89,7 @@ func HandleCallbackQuery(cq CallbackQuery) {
 	}
 	if matched {
 		updateMessageReaction(cq.From, cq.Message, cq.Data)
+		answerReactionCallback(cq)
 	}
 }
 
@@ -118,6 +119,14 @@ func updateMessageReaction(from User, msg Message, reaction string) {
 		"reply_markup": {reply_markup},
 	}
 	MakeTgapiRequest("editMessageReplyMarkup", p)
+}
+
+func answerReactionCallback(cq CallbackQuery) {
+	p := url.Values{
+		"callback_query_id": {cq.ID},
+		"text": {fmt.Sprintf("You %v this.", reactionEmoji[cq.Data])},
+	}
+	MakeTgapiRequest("answerCallbackQuery", p)
 }
 
 func sayThankYou(msg Message) {
