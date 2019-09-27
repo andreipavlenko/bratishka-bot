@@ -64,7 +64,7 @@ func createServer() {
 }
 
 func herokuNoSleep() {
-	c := time.Tick(20 * time.Minute)
+	c := time.Tick(5 * time.Minute)
 	for _ = range c {
 		appURL := os.Getenv("APP_URL")
 		if len(appURL) == 0 {
