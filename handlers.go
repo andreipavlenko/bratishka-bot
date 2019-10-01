@@ -24,6 +24,7 @@ var MessageHandlers = map[string]func(msg Message){
 	`(?i)Что вы\?`:                               sayThinking,
 	`(?i)Спокойной ночи`:                         sayGoodNight,
 	`(?i)Спите\?`:                                saySleeping,
+	`(?i)!чат`:                                		sendChatInfo,
 }
 
 var messageReactions = map[int]Reactions{}
@@ -166,4 +167,10 @@ func sayGoodNight(msg Message) {
 
 func saySleeping(msg Message) {
 	SendMessage("Спим 😴", msg.Chat.ID)
+}
+
+func sendChatInfo(msg Message) {
+	chatID := msg.Chat.ID
+	m := fmt.Sprintf("🤖 ID чата: %v", chatID)
+	SendMessage(m, chatID)
 }
