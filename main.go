@@ -36,7 +36,6 @@ var tableEmoji = map[int]string{
 const ASCIIEmoji = "(•ω•)⊃──☆ﾟ.･❁｡ﾟ✧"
 
 func main() {
-	go herokuNoSleep()
 	go watchForSubstitutionsUpdate()
 	go createServer()
 	if len(token) == 0 {
@@ -60,17 +59,6 @@ func createServer() {
 	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
 		log.Println(err)
-	}
-}
-
-func herokuNoSleep() {
-	c := time.Tick(5 * time.Minute)
-	for _ = range c {
-		appURL := os.Getenv("APP_URL")
-		if len(appURL) == 0 {
-			continue
-		}
-		http.Get(appURL)
 	}
 }
 
