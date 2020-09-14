@@ -279,8 +279,8 @@ func watchForSubstitutionsUpdate() {
 	var data []byte
 	c := time.Tick(5 * time.Minute)
 	for _ = range c {
-		targetChatID := os.Getenv("CHAT_ID")
-		if len(targetChatID) == 0 {
+		targetChatIDs := os.Getenv("CHAT_ID")
+		if len(targetChatIDs) == 0 {
 			continue
 		}
 		res, err := http.Get("http://ki.sumdu.edu.ua/zamen/mes_inst.html")
@@ -293,11 +293,15 @@ func watchForSubstitutionsUpdate() {
 			continue
 		}
 		if len(data) > 0 && reflect.DeepEqual(data, response) == false {
-			chatID, err := strconv.Atoi(targetChatID)
-			if err != nil {
-				continue
+			targetChats := strings.Split(targetChatIDs, ",")
+			for _, targetChatID := range targetChats {
+				chatID, err := strconv.Atoi(targetChatID)
+				if err != nil {
+					continue
+				}
+				SendSubstitutions(chatID)
+				time.Sleep(time.Second)
 			}
-			SendSubstitutions(chatID)
 		}
 		data = response
 	}
