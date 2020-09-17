@@ -25,6 +25,7 @@ var MessageHandlers = map[string]func(msg Message){
 	`(?i)Спокойной ночи`:                         sayGoodNight,
 	`(?i)Спите\?`:                                saySleeping,
 	`(?i)!чат`:                                		sendChatInfo,
+	`(?i)Спасибо`:																replyToThanks,
 }
 
 var messageReactions = map[int]Reactions{}
@@ -173,4 +174,13 @@ func sendChatInfo(msg Message) {
 	chatID := msg.Chat.ID
 	m := fmt.Sprintf("🤖 ID чата: %v", chatID)
 	SendMessage(m, chatID)
+}
+
+func replyToThanks(msg Message) {
+	isBot := msg.From.IsBot
+	chatID := msg.Chat.ID
+	log.Println(isBot)
+	if !isBot {
+		SendMessage("Спасибом даже жопу не вытрешь 😠", chatID)
+	}
 }

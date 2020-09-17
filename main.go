@@ -18,9 +18,9 @@ import (
 )
 
 var (
-	token       = os.Getenv("BOTAPI_TOKEN")
-	apiEndpoint = "https://api.telegram.org/bot"
-	requestURL  = apiEndpoint + token
+	token              = os.Getenv("BOTAPI_TOKEN")
+	apiEndpoint        = "https://api.telegram.org/bot"
+	requestURL         = apiEndpoint + token
 	groupNumberPattern = "(ЕІ-81)|(П-81)"
 )
 
@@ -37,7 +37,6 @@ const ASCIIEmoji = "(•ω•)⊃──☆ﾟ.･❁｡ﾟ✧"
 
 func main() {
 	go watchForSubstitutionsUpdate()
-	go createServer()
 	if len(token) == 0 {
 		log.Fatal("BOTAPI_TOKEN must be defined")
 	}
@@ -51,23 +50,12 @@ func main() {
 	}
 }
 
-func createServer() {
-	port := os.Getenv("PORT")
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello")
-	})
-	err := http.ListenAndServe(":"+port, nil)
-	if err != nil {
-		log.Println(err)
-	}
-}
-
 func startPolling(c chan Update) {
 	offset := 0
 	for {
 		log.Println("Getting updates..")
 		requestParameters := url.Values{
-			"offset": {fmt.Sprintf("%v", offset)},
+			"offset":  {fmt.Sprintf("%v", offset)},
 			"timeout": {"1"},
 		}
 		data, err := MakeTgapiRequest("getUpdates", requestParameters)
