@@ -79,6 +79,7 @@ func startPolling(c chan Update) {
 				}
 			}
 		}
+		time.Sleep(time.Second)
 	}
 }
 
