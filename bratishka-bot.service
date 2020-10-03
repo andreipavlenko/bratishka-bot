@@ -1,0 +1,16 @@
+[Unit]
+Description=Bratishka Telegram Bot
+After=network.target
+
+[Service]
+Environment=BOTAPI_TOKEN=
+Environment=CHAT_ID=
+ExecStart=/root/apps/bratishka-bot/bratishka
+ExecReload=/root/apps/bratishka-bot/bratishka
+WorkingDirectory=/root/apps/bratishka-bot
+KillMode=process
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
