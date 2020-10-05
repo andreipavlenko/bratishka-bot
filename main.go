@@ -29,7 +29,15 @@ var tableEmoji = map[int]string{
 	1: "⏰",
 	2: "📚",
 	3: "🎉",
-	4: "🏫",
+	4: "🚪",
+}
+
+var sheduleTableEmoji = map[int]string{
+	0: "📚",
+	1: "👩‍🎓",
+	2: "🚪",
+	3: "⏰",
+	4: "📆",
 }
 
 // ASCIIEmoji used instead of empty substitutions
@@ -294,4 +302,53 @@ func watchForSubstitutionsUpdate() {
 		}
 		data = response
 	}
+}
+
+func RespondLessonsSheduleCallbackQuery(cq CallbackQuery) {
+	groupName := ""
+	p := url.Values{}
+
+	switch cq.Data {
+	case "group_ei81":
+		groupName = "ЕІ-81"
+	case "group_p81":
+		groupName = "П-81"
+	}
+
+	p.Set("nomer_grup", groupName)
+
+	res, err := http.PostForm("https://ki.sumdu.edu.ua/?p=612", p)
+	if err != nil {
+		return
+	}
+	defer res.Body.Close()
+	if res.StatusCode != 200 {
+		return
+	}
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+	if err != nil {
+		return
+	}
+
+	message := fmt.Sprintf("Розклад занять для групи %v 🥳🎉\n\n", groupName)
+
+	doc.Find(".post table tr").Each(func(i int, s *goquery.Selection) {
+		s.Find("td").Each(func(n int, td *goquery.Selection) {
+			text := strings.TrimSpace(td.Text())
+			emoji := sheduleTableEmoji[n]
+			message += fmt.Sprintf("%v %v\n", emoji, text)
+		})
+		if i == 0 {
+			message = fmt.Sprintf("*%v*", message)
+		}
+		message += "\n"
+	})
+
+	v := url.Values{
+		"chat_id":    {fmt.Sprintf("%v", cq.Message.Chat.ID)},
+		"message_id": {fmt.Sprintf("%v", cq.Message.ID)},
+		"text":       {message},
+		"parse_mode": {"Markdown"},
+	}
+	MakeTgapiRequest("editMessageText", v)
 }

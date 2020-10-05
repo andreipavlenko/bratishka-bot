@@ -12,20 +12,21 @@ type Reactions map[int]string
 var MessageHandlers = map[string]func(msg Message){
 	`^/start$`: sayHello,
 	`(?i)Братишка.*подскажи замены`: handleSubstitutionsRequest,
-	`(?i)!замены`:                                handleSubstitutionsRequest,
-	`(?i)Молодец.*братишка`:                      sayThankYou,
-	`(?i)Спасибо.*братишка`:                      sayPlease,
-	`(?i)Привет.*братишка`:                       sayHello,
-	`(?i)Братишка.*привет`:                       sayHello,
-	`(?i)Братишка.*спишь?`:                       sayNoSleep,
+	`(?i)!замены`:           handleSubstitutionsRequest,
+	`(?i)!пары`:             handleLessonsSheduleRequest,
+	`(?i)Молодец.*братишка`: sayThankYou,
+	`(?i)Спасибо.*братишка`: sayPlease,
+	`(?i)Привет.*братишка`:  sayHello,
+	`(?i)Братишка.*привет`:  sayHello,
+	`(?i)Братишка.*спишь?`:  sayNoSleep,
 	`(?i)Братишка.*сообщи когда появятся замены`: watchUpdates,
-	`(?i)Братишка.*ID`:                           sayChatID,
-	`(?i)Плохой.*братишка`:                       sayWasOffensively,
-	`(?i)Что вы\?`:                               sayThinking,
-	`(?i)Спокойной ночи`:                         sayGoodNight,
-	`(?i)Спите\?`:                                saySleeping,
-	`(?i)!чат`:                                   sendChatInfo,
-	`(?i)Спасибо`:                                replyToThanks,
+	`(?i)Братишка.*ID`:     sayChatID,
+	`(?i)Плохой.*братишка`: sayWasOffensively,
+	`(?i)Что вы\?`:         sayThinking,
+	`(?i)Спокойной ночи`:   sayGoodNight,
+	`(?i)Спите\?`:          saySleeping,
+	`(?i)!чат`:             sendChatInfo,
+	`(?i)Спасибо`:          replyToThanks,
 }
 
 var messageReactions = map[int]Reactions{}
@@ -85,13 +86,17 @@ func SendSubstitutions(chatID int) {
 }
 
 func HandleCallbackQuery(cq CallbackQuery) {
-	matched, err := regexp.Match("reaction", []byte(cq.Data))
+	isUpdateReactionCb, err := regexp.Match("reaction", []byte(cq.Data))
+	isRequestSheduleCb, err := regexp.Match("group", []byte(cq.Data))
+
 	if err != nil {
 		return
 	}
-	if matched {
+	if isUpdateReactionCb {
 		updateMessageReaction(cq.From, cq.Message, cq.Data)
 		answerReactionCallback(cq)
+	} else if isRequestSheduleCb {
+		RespondLessonsSheduleCallbackQuery(cq)
 	}
 }
 
@@ -129,6 +134,23 @@ func answerReactionCallback(cq CallbackQuery) {
 		"text":              {fmt.Sprintf("You %v this.", reactionEmoji[cq.Data])},
 	}
 	MakeTgapiRequest("answerCallbackQuery", p)
+}
+
+func handleLessonsSheduleRequest(msg Message) {
+	message := "Выбери свою группу 🧐"
+
+	replyMarkup := `{"inline_keyboard": [[
+		{"text": "ЕІ-81", "callback_data": "group_ei81"},
+		{"text": "П-81", "callback_data": "group_p81"}
+	]]}`
+
+	p := url.Values{
+		"chat_id":      {fmt.Sprintf("%v", msg.Chat.ID)},
+		"text":         {message},
+		"parse_mode":   {"Markdown"},
+		"reply_markup": {replyMarkup},
+	}
+	MakeTgapiRequest("sendMessage", p)
 }
 
 func sayThankYou(msg Message) {
