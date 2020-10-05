@@ -137,7 +137,7 @@ func answerReactionCallback(cq CallbackQuery) {
 }
 
 func handleLessonsSheduleRequest(msg Message) {
-	message := "Выбери свою группу 🧐"
+	message := "Выбери своего бойца 🧐"
 
 	replyMarkup := `{"inline_keyboard": [[
 		{"text": "ЕІ-81", "callback_data": "group_ei81"},
