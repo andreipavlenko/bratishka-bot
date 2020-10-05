@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"net/url"
 	"log"
+	"net/url"
 	"regexp"
 )
 
@@ -11,7 +11,7 @@ type Reactions map[int]string
 
 var MessageHandlers = map[string]func(msg Message){
 	`^/start$`: sayHello,
-	`(?i)Братишка.*подскажи замены`:              handleSubstitutionsRequest,
+	`(?i)Братишка.*подскажи замены`: handleSubstitutionsRequest,
 	`(?i)!замены`:                                handleSubstitutionsRequest,
 	`(?i)Молодец.*братишка`:                      sayThankYou,
 	`(?i)Спасибо.*братишка`:                      sayPlease,
@@ -24,8 +24,8 @@ var MessageHandlers = map[string]func(msg Message){
 	`(?i)Что вы\?`:                               sayThinking,
 	`(?i)Спокойной ночи`:                         sayGoodNight,
 	`(?i)Спите\?`:                                saySleeping,
-	`(?i)!чат`:                                		sendChatInfo,
-	`(?i)Спасибо`:																replyToThanks,
+	`(?i)!чат`:                                   sendChatInfo,
+	`(?i)Спасибо`:                                replyToThanks,
 }
 
 var messageReactions = map[int]Reactions{}
@@ -76,9 +76,9 @@ func SendSubstitutions(chatID int) {
 	})
 
 	p := url.Values{
-		"chat_id":    {fmt.Sprintf("%v", chatID)},
-		"text":       {message},
-		"parse_mode": {"Markdown"},
+		"chat_id":      {fmt.Sprintf("%v", chatID)},
+		"text":         {message},
+		"parse_mode":   {"Markdown"},
 		"reply_markup": {reply_markup},
 	}
 	MakeTgapiRequest("sendMessage", p)
@@ -102,7 +102,7 @@ func updateMessageReaction(from User, msg Message, reaction string) {
 		reactions[userID] = reaction
 		messageReactions[msgID] = reactions
 	} else {
-		messageReactions[msgID] = Reactions{ userID: reaction, }
+		messageReactions[msgID] = Reactions{userID: reaction}
 	}
 	reactions = messageReactions[msgID]
 	counter := map[string]int{
@@ -116,8 +116,8 @@ func updateMessageReaction(from User, msg Message, reaction string) {
 	log.Println("Updating reaction")
 	reply_markup := makeReactionsKeyboard(counter)
 	p := url.Values{
-		"chat_id":    {fmt.Sprintf("%v", chatID)},
-		"message_id":    {fmt.Sprintf("%v", msgID)},
+		"chat_id":      {fmt.Sprintf("%v", chatID)},
+		"message_id":   {fmt.Sprintf("%v", msgID)},
 		"reply_markup": {reply_markup},
 	}
 	MakeTgapiRequest("editMessageReplyMarkup", p)
@@ -126,7 +126,7 @@ func updateMessageReaction(from User, msg Message, reaction string) {
 func answerReactionCallback(cq CallbackQuery) {
 	p := url.Values{
 		"callback_query_id": {cq.ID},
-		"text": {fmt.Sprintf("You %v this.", reactionEmoji[cq.Data])},
+		"text":              {fmt.Sprintf("You %v this.", reactionEmoji[cq.Data])},
 	}
 	MakeTgapiRequest("answerCallbackQuery", p)
 }
