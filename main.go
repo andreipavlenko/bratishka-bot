@@ -330,7 +330,7 @@ func RespondLessonsSheduleCallbackQuery(cq CallbackQuery) {
 		return
 	}
 
-	message := fmt.Sprintf("Розклад занять для групи %v 🥳🎉\n\n", groupName)
+	message := fmt.Sprintf("Розклад занять для групи %v 🥳\n\n", groupName)
 
 	doc.Find(".post table tr").Each(func(i int, s *goquery.Selection) {
 		s.Find("td").Each(func(n int, td *goquery.Selection) {
