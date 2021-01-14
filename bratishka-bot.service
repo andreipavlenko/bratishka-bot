@@ -3,7 +3,7 @@ Description=Bratishka Telegram Bot
 After=network.target
 
 [Service]
-Environment=BOTAPI_TOKEN=
+Environment=TOKEN=
 Environment=CHAT_ID=
 ExecStart=/root/apps/bratishka-bot/bratishka
 ExecReload=/root/apps/bratishka-bot/bratishka

@@ -18,7 +18,7 @@ import (
 )
 
 var (
-	token              = os.Getenv("BOTAPI_TOKEN")
+	token              = os.Getenv("TOKEN")
 	apiEndpoint        = "https://api.telegram.org/bot"
 	requestURL         = apiEndpoint + token
 	groupNumberPattern = "(ЕІ-81)|(П-81)"
@@ -44,10 +44,10 @@ var sheduleTableEmoji = map[int]string{
 const ASCIIEmoji = "(•ω•)⊃──☆ﾟ.･❁｡ﾟ✧"
 
 func main() {
-	go watchForSubstitutionsUpdate()
 	if len(token) == 0 {
-		log.Fatal("BOTAPI_TOKEN must be defined")
+		log.Fatal("Environment variable `TOKEN` must be defined")
 	}
+	go watchForSubstitutionsUpdate()
 	updates := make(chan Update)
 	go startPolling(updates)
 	for {
@@ -61,7 +61,6 @@ func main() {
 func startPolling(c chan Update) {
 	offset := 0
 	for {
-		log.Println("Getting updates..")
 		requestParameters := url.Values{
 			"offset":  {fmt.Sprintf("%v", offset)},
 			"timeout": {"1"},
@@ -92,7 +91,6 @@ func startPolling(c chan Update) {
 }
 
 func processUpdate(u Update) {
-	log.Println("Processing update..")
 	_, err := strconv.Atoi(u.CallbackQuery.ID)
 	if err == nil {
 		HandleCallbackQuery(u.CallbackQuery)
@@ -132,7 +130,7 @@ func MakeTgapiRequest(methodName string, parameters url.Values) ([]byte, error) 
 }
 
 func GetSubstitutions() (string, error) {
-	doc, err := getDocument()
+	doc, err := getSubstitutionsDocument()
 	if err != nil {
 		return "", err
 	}
@@ -144,7 +142,7 @@ func GetSubstitutions() (string, error) {
 	return message, nil
 }
 
-func getDocument() (*goquery.Document, error) {
+func getSubstitutionsDocument() (*goquery.Document, error) {
 	res, err := http.Get("http://ki.sumdu.edu.ua/zamen/mes_inst.html")
 	if err != nil {
 		return nil, err
@@ -160,6 +158,7 @@ func getDocument() (*goquery.Document, error) {
 	return doc, nil
 }
 
+// Parse document structure into message text
 func parseDocument(doc *goquery.Document) (string, error) {
 	var headerText, bodyText, classroomSubstitutions string
 	var err error
@@ -275,7 +274,7 @@ func isMatchedGroupNumberForTableRow(row *goquery.Selection) bool {
 func watchForSubstitutionsUpdate() {
 	var data []byte
 	c := time.Tick(5 * time.Minute)
-	for _ = range c {
+	for range c {
 		targetChatIDs := os.Getenv("CHAT_ID")
 		if len(targetChatIDs) == 0 {
 			continue
