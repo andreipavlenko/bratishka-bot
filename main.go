@@ -50,6 +50,7 @@ func main() {
 	go watchForSubstitutionsUpdate()
 	updates := make(chan Update)
 	go startPolling(updates)
+	log.Println("Bot started")
 	for {
 		select {
 		case upd := <-updates:
@@ -75,7 +76,7 @@ func startPolling(c chan Update) {
 			log.Println(err)
 		}
 		if updates.Ok {
-			if r := updates.Result; offset == 0 && len(r) > 0 {
+			if r := updates.Result; offset == 0 && len(r) > 1 {
 				offset = r[len(r)-1].UpdateID + 1
 			} else {
 				for idx, result := range updates.Result {
@@ -177,8 +178,7 @@ func parseDocument(doc *goquery.Document) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	link := "[Переглянути на сайті 🦄](http://ki.sumdu.edu.ua/zamen/mes_inst.html)"
-	message := fmt.Sprintf("%v\n\n%v\n\n%v%v", headerText, bodyText, classroomSubstitutions, link)
+	message := fmt.Sprintf("%v\n\n%v\n\n%v", headerText, bodyText, classroomSubstitutions)
 	return message, nil
 }
 

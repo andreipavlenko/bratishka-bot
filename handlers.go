@@ -31,10 +31,15 @@ func SendSubstitutions(chatID int) {
 		return
 	}
 
+	replyMarkup := `{"inline_keyboard": [[
+		{"text": "Переглянути на сайті 🦄", "url": "http://ki.sumdu.edu.ua/zamen/mes_inst.html"}
+	]]}`
+
 	p := url.Values{
-		"chat_id":    {fmt.Sprintf("%v", chatID)},
-		"text":       {message},
-		"parse_mode": {"Markdown"},
+		"chat_id":      {fmt.Sprintf("%v", chatID)},
+		"text":         {message},
+		"parse_mode":   {"Markdown"},
+		"reply_markup": {replyMarkup},
 	}
 	MakeTgapiRequest("sendMessage", p)
 }
