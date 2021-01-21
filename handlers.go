@@ -6,6 +6,7 @@ import (
 	"regexp"
 )
 
+// MessageHandlers maps message text with corresponding function to handle response
 var MessageHandlers = map[string]func(msg Message){
 	`^/start$`:    sayHello,
 	`(?i)!замены`: handleSubstitutionsRequest,
@@ -22,6 +23,7 @@ func handleSubstitutionsRequest(msg Message) {
 	SendSubstitutions(msg.Chat.ID)
 }
 
+// SendSubstitutions fetches html page, parses it into message and sends to a chat
 func SendSubstitutions(chatID int) {
 	message, err := GetSubstitutions()
 	if err != nil {
@@ -37,6 +39,7 @@ func SendSubstitutions(chatID int) {
 	MakeTgapiRequest("sendMessage", p)
 }
 
+// HandleCallbackQuery send corresponding response to a callback query message
 func HandleCallbackQuery(cq CallbackQuery) {
 	isRequestSheduleCb, err := regexp.Match("group", []byte(cq.Data))
 

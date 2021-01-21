@@ -108,6 +108,7 @@ func processUpdate(u Update) {
 	}
 }
 
+// SendMessage sends message with provided text to chat that has given id
 func SendMessage(text string, chatID int) {
 	p := url.Values{
 		"chat_id": {fmt.Sprintf("%v", chatID)},
@@ -116,6 +117,7 @@ func SendMessage(text string, chatID int) {
 	MakeTgapiRequest("sendMessage", p)
 }
 
+// MakeTgapiRequest does a request by given method name
 func MakeTgapiRequest(methodName string, parameters url.Values) ([]byte, error) {
 	res, err := http.PostForm(requestURL+"/"+methodName, parameters)
 	if err != nil {
@@ -129,6 +131,7 @@ func MakeTgapiRequest(methodName string, parameters url.Values) ([]byte, error) 
 	return body, nil
 }
 
+// GetSubstitutions fetches html page and returns it parsed into message text
 func GetSubstitutions() (string, error) {
 	doc, err := getSubstitutionsDocument()
 	if err != nil {
@@ -303,6 +306,7 @@ func watchForSubstitutionsUpdate() {
 	}
 }
 
+// RespondLessonsSheduleCallbackQuery asks user to select group
 func RespondLessonsSheduleCallbackQuery(cq CallbackQuery) {
 	groupName := ""
 	p := url.Values{}
